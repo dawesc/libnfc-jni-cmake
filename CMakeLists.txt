@@ -1,6 +1,10 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 
-project(ThirdParty)
+project(libnfc_libllcp)
+
+SET(MAJOR_VERSION 1)
+SET(MINOR_VERSION 0)
+SET(PATCH_VERSION 0)
 
 include(ExternalProject)
 
@@ -29,13 +33,13 @@ if(BUILD_LIBNFC)
     INSTALL_COMMAND 	make install)
 
   install(DIRECTORY "${LIBNFC_INSTALL_DIR}/bin/"
-    DESTINATION bin COMPONENT runtime-third-party-third-party USE_SOURCE_PERMISSIONS OPTIONAL)
+    DESTINATION bin COMPONENT runtime USE_SOURCE_PERMISSIONS OPTIONAL)
   install(DIRECTORY "${LIBNFC_INSTALL_DIR}/lib/"
-    DESTINATION lib COMPONENT runtime-third-party-third-party USE_SOURCE_PERMISSIONS)
+    DESTINATION lib COMPONENT runtime USE_SOURCE_PERMISSIONS)
   install(DIRECTORY "${LIBNFC_INSTALL_DIR}/include/"
-    DESTINATION include COMPONENT devel-third-party USE_SOURCE_PERMISSIONS)
+    DESTINATION include COMPONENT dev USE_SOURCE_PERMISSIONS)
   install(DIRECTORY "${LIBNFC_INSTALL_DIR}/share/"
-    DESTINATION share COMPONENT devel-third-party USE_SOURCE_PERMISSIONS)
+    DESTINATION share COMPONENT dev USE_SOURCE_PERMISSIONS)
 endif()
 
 ########################################
@@ -59,7 +63,54 @@ if(BUILD_LIBLLCP)
     DEPENDS          LIBNFC)
 
   install(DIRECTORY "${LIBLLCP_INSTALL_DIR}/lib/"
-    DESTINATION lib COMPONENT runtime-third-party USE_SOURCE_PERMISSIONS)
+    DESTINATION lib COMPONENT runtime USE_SOURCE_PERMISSIONS)
   install(DIRECTORY "${LIBLLCP_INSTALL_DIR}/include/"
-    DESTINATION include COMPONENT devel-third-party USE_SOURCE_PERMISSIONS)
+    DESTINATION include COMPONENT dev USE_SOURCE_PERMISSIONS)
 endif()
+
+
+########################################
+## Packaging
+########################################
+#
+
+SET(CPACK_GENERATOR "DEB")
+SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Christopher Dawes")
+
+SET(CPACK_PACKAGE_DESCRIPTION "libnfc and libllcp")
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Includes packages for libnfc and libllcp")
+SET(CPACK_PACKAGE_VENDOR "N/A")
+SET(CPACK_PACKAGE_CONTACT "Christopher Dawes")
+SET(CPACK_PACKAGE_VERSION_MAJOR "${MAJOR_VERSION}")
+SET(CPACK_PACKAGE_VERSION_MINOR "${MINOR_VERSION}")
+SET(CPACK_PACKAGE_VERSION_PATCH "${PATCH_VERSION}")
+SET(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${MAJOR_VERSION}.${MINOR_VERSION}.${CPACK_PACKAGE_VERSION_PATCH}")
+SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${MAJOR_VERSION}.${MINOR_VERSION}.${CPACK_PACKAGE_VERSION_PATCH}")
+
+SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libusb")
+
+SET(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+SET(CPACK_DEBIAN_PACKAGE_SECTION "development")
+SET(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
+SET (CPACK_DEB_COMPONENT_INSTALL ON)
+
+SET(CPACK_COMPONENTS_ALL runtime dev)
+
+INCLUDE(CPack)
+
+cpack_add_component_group("runtime")
+cpack_add_component_group("dev")
+cpack_add_install_type(Full)
+cpack_add_install_type(Core)
+
+cpack_add_component("runtime"
+                        DISPLAY_NAME "Runtime Components"
+                        DESCRIPTION "Runtime Components"
+                        GROUP "runtime"
+                        INSTALL_TYPES Core Full)
+cpack_add_component("dev"
+                        DISPLAY_NAME "Development"
+                        DESCRIPTION "C++ Headers"
+                        GROUP "dev"
+                        DEPENDS "runtime"
+                        INSTALL_TYPES Full)
