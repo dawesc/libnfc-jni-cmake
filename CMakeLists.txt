@@ -10,6 +10,7 @@ include(ExternalProject)
 
 option(BUILD_LIBNFC          "Build local libnfc library"       on)
 option(BUILD_LIBLLCP         "Build local libllcp library"      on)
+option(BUILD_GSL             "Build local gsl library"          on)
 
 ########################################
 ## libnfc
@@ -68,6 +69,26 @@ if(BUILD_LIBLLCP)
     DESTINATION include COMPONENT dev USE_SOURCE_PERMISSIONS)
 endif()
 
+
+########################################
+## Microsoft GSL
+
+if(BUILD_GSL)
+  set(GSL_GIT_URL "https://github.com/Microsoft/GSL.git")
+  set(GSL_GIT_VERSION "0cebbd77bfc21acbf1cc05983ad626539eeeb8e0")
+  set(GSL_SOURCE_DIR "${CMAKE_SOURCE_DIR}/src/gsl")
+
+  externalproject_add(gsl
+    DOWNLOAD_COMMAND git clone ${GSL_GIT_URL} ${GSL_SOURCE_DIR} || true
+    UPDATE_COMMAND git fetch --prune --tags && git checkout ${GSL_GIT_VERSION}
+    SOURCE_DIR ${GSL_SOURCE_DIR}
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND "")
+
+  install(DIRECTORY "${GSL_SOURCE_DIR}/include/"
+    DESTINATION include COMPONENT dev USE_SOURCE_PERMISSIONS)
+endif()
 
 ########################################
 ## Packaging
